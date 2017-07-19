@@ -599,7 +599,7 @@ table.CodeRay td.code>pre{padding:0}
 <span id="author" class="author">The Sakuli Team</span><br>
 <span id="email" class="email"><a href="mailto:sakuli@consol.de">sakuli@consol.de</a></span><br>
 <span id="revnumber">version v1.1.0-SNAPSHOT,</span>
-<span id="revdate">19.07.2017 @ 15:59:48 CEST</span>
+<span id="revdate">19.07.2017 @ 17:05:05 CEST</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Sakuli E2E</div>
@@ -723,7 +723,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#property-loading-mechanism">1.3.2.1. Property loading mechanism</a></li>
 <li><a href="#_exception_handling">1.3.2.2. Exception handling</a></li>
 <li><a href="#_logging">1.3.2.3. Logging</a></li>
-<li><a href="#_secret_de_encryption">1.3.2.4. Secret De-/Encryption</a></li>
+<li><a href="#encryption">1.3.2.4. Secret De-/Encryption</a></li>
 <li><a href="#_screenshot_settings">1.3.2.5. Screenshot settings</a></li>
 <li><a href="#_gui_only_tests">1.3.2.6. GUI-only tests</a></li>
 <li><a href="#sahi-controller">1.3.2.7. Sahi Controller</a></li>
@@ -4631,7 +4631,7 @@ The text is entered at the current position of the focus.</p>
 <div id="Environment.decryptSecret" class="paragraph">
 <div class="title">Environment.decryptSecret(secret)</div>
 <p>Decrypt a encrypted secret and returns the value at runtime.
-The decryption will only work if the encryption and decryption happen on the same physical machine.
+The decryption will only work like described at <a href="https://github.com/ConSol/sakuli/blob/master/docs/manual/testdefinition/advanced-topics/sakuli-encryption.adoc" class="bare">https://github.com/ConSol/sakuli/blob/master/docs/manual/testdefinition/advanced-topics/sakuli-encryption.adoc</a> .
 There will be no logging with the decrypted secret during this step.
 &lt;p/&gt;
 To create a encrypted secret see "sakuli-manual.md".</p>
@@ -5895,7 +5895,7 @@ Default: false.</p>
 <p><a href="https://github.com/ConSol/sakuli/blob/dev/docs/manual/testdefinition/advanced-topics/sakuli-property-loading.adoc" target="_blank">view</a> | <a href="https://github.com/ConSol/sakuli/edit/dev/docs/manual/testdefinition/advanced-topics/sakuli-property-loading.adoc" target="_blank">edit</a></p>
 </div>
 <div class="paragraph">
-<p><strong>Sakuli properties</strong> are predefined in <code><em>SAKULI_HOME</em>/config/sakuli-default.properties</code>; these values should/can be <strong>overridden</strong> in the following order (last match wins):</p>
+<p><strong>Sakuli properties</strong> are predefined in <code><em>SAKULI_HOME</em>/config/sakuli-default.properties</code>; these values should/can be <strong>overwritten</strong> in the following order (last match wins):</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
@@ -5908,7 +5908,14 @@ Default: false.</p>
 -&gt; valid for the <strong>test suite</strong> itself and <strong>all test cases</strong> within it</p>
 </li>
 <li>
-<p>as a <strong>Java VM option</strong> like <code>-D log.level.sakuli=DEBUG</code>, as option of the Sakuli starter
+<p>as a <strong>Java VM option</strong> as option of the Sakuli starter, like <code>sakuli run -D log.level.sakuli=DEBUG</code>,
+-&gt; valid for only one test run</p>
+</li>
+<li>
+<p>as a <strong>environment variable</strong>  matching the property key in dashed uppercase writing, e.g. <code>LOG_LEVEL_SAKULI=DEBUG</code>  -&gt; overwrites property <code>log.level.sakuli</code> as long as environment variable is defined</p>
+</li>
+<li>
+<p>as a <strong>explicit starter option</strong> (if present) of the Sakuli CLI, e.g. <code>sakuli run test -browser chrome</code>
 -&gt; valid for only one test run</p>
 </li>
 </ol>
@@ -6086,26 +6093,182 @@ __SUITE_FOLDER__/*/_logs/* __SUITE_FOLDER__/*/_logs/_screenshots/* {
 </div>
 </div>
 <div class="sect4">
-<h5 id="_secret_de_encryption"><a class="anchor" href="#_secret_de_encryption"></a>1.3.2.4. Secret De-/Encryption</h5>
+<h5 id="encryption"><a class="anchor" href="#encryption"></a>1.3.2.4. Secret De-/Encryption</h5>
 <div id="git-edit-section" class="paragraph">
 <p><a href="https://github.com/ConSol/sakuli/blob/dev/docs/manual/testdefinition/advanced-topics/sakuli-encryption.adoc" target="_blank">view</a> | <a href="https://github.com/ConSol/sakuli/edit/dev/docs/manual/testdefinition/advanced-topics/sakuli-encryption.adoc" target="_blank">edit</a></p>
 </div>
 <div class="paragraph">
-<div class="title">Interface selection</div>
 <p>Neither Sahi nor Sikuli have a way to prevent <strong>sensible data</strong> (passwords, PINs, etc.) from being logged and stored in the script in <strong>clear text</strong>.</p>
 </div>
 <div class="paragraph">
-<p>That&#8217;s the reason why Sakuli is able to <strong>encrypt</strong> them on the command line, and to <strong>decrypt</strong> them again on runtime just for the moment when they are needed. There is no (quick) way to decrypt those secrets again on the command line, so this is rather a way to obscure things not everybody should see than high-secure a encryption mechanism.</p>
+<p>That&#8217;s the reason why Sakuli is able to <strong>encrypt</strong> them on the command line, and to <strong>decrypt</strong> them again on runtime just for the moment when they are needed. There is no (quick) way to decrypt those secrets again on the command line, so this is rather a way to obscure things not everybody should see than high-secure a encryption mechanism. Since version <code>v1.1.0</code> Sakuli provides two different possibilities to en-/decrypt secrets, each use the cipher algorithm <code>AES/CBC/PKCS5Padding</code>:</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+In this chapter the usage of the Sakuli CLI is defined for Linux <code>sakuli</code> but works on Windows <code>sakuli.exe</code> in the same way!
+</td>
+</tr>
+</table>
+</div>
+<div id="encryption-environment" class="paragraph">
+<div class="title">Encryption Mode <code>environment</code> (default):</div>
+<p>Since version <code>v1.1.0</code> Sakuli uses an environment based master-key  mechanism as default way to de-/encrypt secrets.</p>
 </div>
 <div class="paragraph">
+<p><strong>1) Create a new Masterkey</strong></p>
+</div>
+<div class="paragraph">
+<p>First we have to create a new masterkey:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">sakuli create masterkey
+=========== Calling Sakuli JAR =====================================================
+
+
+Create a Sakuli encryption master key (AES 128 bit):
+
+ny3bC1ZKuHzg7saT1hRCMQ== <i class="conum" data-value="1"></i><b>(1)</b>
+
+... now add this as environment var 'SAKULI_ENCRYPTION_KEY' or property 'sakuli.encryption.key'</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>masterkey</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><strong>2) Encrypt a secret</strong></p>
+</div>
+<div class="paragraph">
+<p>To encrypt secrets, you can also use the command line. To use the generated masterkey from above, you can ether set the environment variable <code>SAKULI_ENCRYPTION_KEY</code> or define the CLI option <code>-masterkey &lt;secret&gt;</code>:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">export SAKULI_ENCRYPTION_KEY=ny3bC1ZKuHzg7saT1hRCMQ== <i class="conum" data-value="1"></i><b>(1)</b>
+sakuli encrypt foo
+=========== Calling Sakuli JAR =====================================================
+
+
+String to Encrypt: foo
+...INFO  [2017-07-18 16:01:28.311] - use environment var 'SAKULI_ENCRYPTION_KEY' for encryption
+
+Encrypted secret with 'environment masterkey': tn9PPXjwgH6VDTIEEWTdY9G2StrYxCrX1tXCueA3HwY=  <i class="conum" data-value="3"></i><b>(3)</b>
+
+... now copy the secret to your testcase!</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">sakuli encrypt foo -masterkey ny3bC1ZKuHzg7saT1hRCMQ== <i class="conum" data-value="2"></i><b>(2)</b>
+=========== Calling Sakuli JAR =====================================================
+
+
+String to Encrypt: foo
+...
+Encrypted secret with 'environment masterkey': mLzYiksPjmoqbdivBMDhYglcbnYCzv3iVdpmnmdXbV4=  <i class="conum" data-value="3"></i><b>(3)</b>
+
+... now copy the secret to your testcase!</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>masterkey defined by environment variable</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>masterkey defined through CLI option</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="3"></i><b>3</b></td>
+<td>encrypted secret</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>The encryption secret can now be used in our test case definition.</p>
+</div>
+<div class="paragraph">
+<p><strong>3) Decrypt a secret</strong></p>
+</div>
+<div class="paragraph">
+<p>For decrypting the secret, just define the masterkey with one of the following options:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Environment variable <code>SAKULI_ENCRYPTION_KEY</code></p>
+</li>
+<li>
+<p>Sakuli run option <code>sakuli run &lt;test suite&gt; -masterkey &lt;masterkey&gt;</code></p>
+</li>
+<li>
+<p><a href="#property-loading-mechanism">Sakuli property</a> <code>sakuli.encryption.key</code></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>After that Sakuli will automatically decrypt the a secret during runtime of the test cases, by using one of the following methods:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#Environment.pasteAndDecrypt">Environment.pasteAndDecrypt(text)</a></p>
+</li>
+<li>
+<p><a href="#Environment.typeAndDecrypt">Environment.typeAndDecrypt(text, optModifiers)</a></p>
+</li>
+<li>
+<p><a href="#Environment.decryptSecret">Environment.decryptSecret(secret)</a></p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p><em>Example usage in testcase:</em></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="javascript"><span class="comment">//testcase.js</span>
+    env.typeAndDecrypt(<span class="string"><span class="delimiter">&quot;</span><span class="content">eKcf2WLQIab6APvi4BKKBiJdP31SK86z/oOJRUAQkdE=</span><span class="delimiter">&quot;</span></span>);</code></pre>
+</div>
+</div>
+<div class="admonitionblock caution">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-caution" title="Caution"></i>
+</td>
+<td class="content">
+Due to the fact, that Sakuli doesn&#8217;t know how you want to provide your secrets like the masterkey, you have to think about yourself what is the best and safest way to provide it!
+</td>
+</tr>
+</table>
+</div>
+<div id="encryption-interface" class="paragraph">
+<div class="title">Encryption Mode <code>interface</code>:</div>
 <p>Among other parameters, Sakuli uses the MAC address of a local network interface card as a encryption salt. Hence no virtual adapters can be choosen.</p>
+</div>
+<div class="paragraph">
+<p><strong>1) Choosing a NIC</strong></p>
 </div>
 <div class="paragraph">
 <p>You can decide whether Sakuli should automatically select an adapter by setting the following <a href="#property-loading-mechanism">properties</a>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="properties">sakuli.encryption.interface.autodetect=true</code></pre>
+<pre class="CodeRay highlight"><code data-lang="properties">sakuli.encrpytion.mode=interface
+sakuli.encryption.interface.autodetect=true</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -6113,18 +6276,32 @@ __SUITE_FOLDER__/*/_logs/* __SUITE_FOLDER__/*/_logs/_screenshots/* {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="properties">sakuli.encryption.interface.autodetect=false
+<pre class="CodeRay highlight"><code data-lang="properties">sakuli.encrpytion.mode=interface
+sakuli.encryption.interface.autodetect=false
 sakuli.encryption.interface=eth0</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<div class="title">Encrypt a secret</div>
+<p>A second possibility is to use Sakuli starter option:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash"># use autodetect
+sakuli COMMAND ARGUMENT -interface auto
+# use specific interface
+sakuli COMMAND ARGUMENT -interface eth0</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p><strong>2) Encrypt a secret</strong></p>
+</div>
+<div class="paragraph">
 <p>To encrypt secrets on the command line, Sakuli uses the MAC address of a NIC on the local machine (Windows/Linux). The following command lets Sakuli decide which NIC will be used:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">sakuli encrypt foo
-=========== Calling Sakuli JAR: java -classpath C:\Program Files (x86)\sakuli\sakuli-v0.9.3-SNAPSHOT\libs\jav\sakuli.jar;C:\Program Files (x86)\sakuli\sakuli-v0.9.3-SNAPSHOT\libs\java\* org.sakuli.starter.SakuliStarter --sakuli_home C:\Program Files (x86)\sakuli\sakuli-v0.9.3-SNAPSHOT --encrypt foo ===========
+<pre class="CodeRay highlight"><code data-lang="bash">sakuli encrypt foo -interface auto
+=========== Calling Sakuli JAR =====================================================
 
 String to Encrypt: foo
 ...
@@ -6137,8 +6314,19 @@ Encrypted secret with interface 'eth3': CKXIAZmO7rSoBVMGgJZPDQ==
 <p>Add <code>-interface eth0</code> to select eth0 as salt interface. Add <code>-interface list</code> to get a list of all available adapters.</p>
 </div>
 <div class="paragraph">
-<div class="title">Decrypt a secret</div>
-<p>To decrypt and use a secret in Sakuli test cases, use one of the following methods:</p>
+<p><strong>3) Decrypt a secret</strong></p>
+</div>
+<div class="paragraph">
+<p>To decrypt a secret define the interface encryption mode in your <code>sakuli.properties</code> or <code>testsuite.properties</code> (see <a href="#property-loading-mechanism">Property loading mechanism</a>).</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="properties">sakuli.encrpytion.mode=interface
+sakuli.encryption.interface.autodetect=true</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After that Sakuli will automatically decrypt the a secret during runtime of the test cases, by using one of the following methods:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -10608,7 +10796,7 @@ Website: <a href="http://www.consol.de">www.consol.de</a></p>
 <div id="footer">
 <div id="footer-text">
 Version v1.1.0-SNAPSHOT<br>
-Last updated 2017-07-19 15:59:49 CEST
+Last updated 2017-07-19 17:05:07 CEST
 </div>
 </div>
 <!--
