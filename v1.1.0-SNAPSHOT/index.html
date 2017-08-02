@@ -599,7 +599,7 @@ table.CodeRay td.code>pre{padding:0}
 <span id="author" class="author">The Sakuli Team</span><br>
 <span id="email" class="email"><a href="mailto:sakuli@consol.de">sakuli@consol.de</a></span><br>
 <span id="revnumber">version v1.1.0-SNAPSHOT,</span>
-<span id="revdate">31.07.2017 @ 17:26:44 CEST</span>
+<span id="revdate">02.08.2017 @ 11:10:27 CEST</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Sakuli E2E</div>
@@ -6150,7 +6150,7 @@ ny3bC1ZKuHzg7saT1hRCMQ== <i class="conum" data-value="1"></i><b>(1)</b>
 <p><strong>2) Encrypt a secret</strong></p>
 </div>
 <div class="paragraph">
-<p>To encrypt secrets, you can also use the command line. To use the generated masterkey from above, you can ether set the environment variable <code>SAKULI_ENCRYPTION_KEY</code> or define the CLI option <code>-masterkey &lt;secret&gt;</code>:</p>
+<p>To encrypt secrets, you can also use the command line. To use the generated masterkey from above, you can either set the environment variable <code>SAKULI_ENCRYPTION_KEY</code>&#8230;&#8203;</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -6162,10 +6162,15 @@ sakuli encrypt foo
 String to Encrypt: foo
 ...INFO  [2017-07-18 16:01:28.311] - use environment var 'SAKULI_ENCRYPTION_KEY' for encryption
 
-Encrypted secret with 'environment masterkey': tn9PPXjwgH6VDTIEEWTdY9G2StrYxCrX1tXCueA3HwY=  <i class="conum" data-value="3"></i><b>(3)</b>
+Encrypted secret with 'environment masterkey':
+
+tn9PPXjwgH6VDTIEEWTdY9G2StrYxCrX1tXCueA3HwY=  <i class="conum" data-value="3"></i><b>(3)</b>
 
 ... now copy the secret to your testcase!</code></pre>
 </div>
+</div>
+<div class="paragraph">
+<p>or define the CLI option <code>-masterkey &lt;secret&gt;</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -6175,7 +6180,9 @@ Encrypted secret with 'environment masterkey': tn9PPXjwgH6VDTIEEWTdY9G2StrYxCrX1
 
 String to Encrypt: foo
 ...
-Encrypted secret with 'environment masterkey': mLzYiksPjmoqbdivBMDhYglcbnYCzv3iVdpmnmdXbV4=  <i class="conum" data-value="3"></i><b>(3)</b>
+Encrypted secret with 'environment masterkey':
+
+mLzYiksPjmoqbdivBMDhYglcbnYCzv3iVdpmnmdXbV4=  <i class="conum" data-value="3"></i><b>(3)</b>
 
 ... now copy the secret to your testcase!</code></pre>
 </div>
@@ -6219,7 +6226,7 @@ Encrypted secret with 'environment masterkey': mLzYiksPjmoqbdivBMDhYglcbnYCzv3iV
 </ul>
 </div>
 <div class="paragraph">
-<p>After that Sakuli will automatically decrypt the a secret during runtime of the test cases, by using one of the following methods:</p>
+<p>After that Sakuli will automatically decrypt secrets during runtime of the test cases when using one of the following methods:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -6250,7 +6257,7 @@ Encrypted secret with 'environment masterkey': mLzYiksPjmoqbdivBMDhYglcbnYCzv3iV
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-Due to the fact, that Sakuli doesn&#8217;t know how you want to provide your secrets like the masterkey, you have to think about yourself what is the best and safest way to provide it!
+Both the environment variable and the property file containing the master key must be protected against other users. (User environment instead of system environment variable / set proper file permissions)
 </td>
 </tr>
 </table>
@@ -6326,7 +6333,7 @@ sakuli.encryption.interface.autodetect=true</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>After that Sakuli will automatically decrypt the a secret during runtime of the test cases, by using one of the following methods:</p>
+<p>After that Sakuli will automatically decrypt secrets during runtime of the test cases when using one of the following methods:</p>
 </div>
 <div class="ulist">
 <ul>
@@ -10809,7 +10816,7 @@ Website: <a href="http://www.consol.de">www.consol.de</a></p>
 <div id="footer">
 <div id="footer-text">
 Version v1.1.0-SNAPSHOT<br>
-Last updated 2017-07-31 17:26:45 CEST
+Last updated 2017-08-02 11:10:29 CEST
 </div>
 </div>
 <!--
