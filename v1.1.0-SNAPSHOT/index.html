@@ -599,7 +599,7 @@ table.CodeRay td.code>pre{padding:0}
 <span id="author" class="author">The Sakuli Team</span><br>
 <span id="email" class="email"><a href="mailto:sakuli@consol.de">sakuli@consol.de</a></span><br>
 <span id="revnumber">version v1.1.0-SNAPSHOT,</span>
-<span id="revdate">02.08.2017 @ 11:18:21 CEST</span>
+<span id="revdate">04.08.2017 @ 15:36:24 CEST</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Sakuli E2E</div>
@@ -761,13 +761,13 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#omd-preparation">1.4.1.1. OMD preparation</a>
 <ul class="sectlevel5">
 <li><a href="#_requirements">Requirements</a></li>
+<li><a href="#_nagios_configuration">Nagios configuration</a></li>
 </ul>
 </li>
 <li><a href="#omd-gearman">1.4.1.2. Gearman forwarder</a>
 <ul class="sectlevel5">
 <li><a href="#_omd_configuration">OMD Configuration</a></li>
 <li><a href="#sakuli_client_config">Sakuli Client Configuration</a></li>
-<li><a href="#_using_aes_encryption_optional">Using AES encryption (optional)</a></li>
 <li><a href="#gearman_proxy">Gearman proxy (optional)</a></li>
 </ul>
 </li>
@@ -795,7 +795,7 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel5">
 <li><a href="#_feature_description">Feature description</a></li>
 <li><a href="#_activating_the_feature">Activating the feature</a></li>
-<li><a href="#screenshot_history_eh">Event handler</a></li>
+<li><a href="#screenshot_history_eh">Event handler template</a></li>
 <li><a href="#_thruk_action_menu">Thruk action_menu</a></li>
 <li><a href="#_grafana_integration">Grafana integration</a></li>
 </ul>
@@ -7034,20 +7034,41 @@ If you want to run OMD-Labs in a container then check out the <a href="https://g
 </li>
 </ul>
 </div>
-<div class="sect6">
-<h7 id="_html_escaping"><a class="anchor" href="#_html_escaping"></a>HTML escaping</h7>
+</div>
+<div class="sect5">
+<h6 id="_nagios_configuration"><a class="anchor" href="#_nagios_configuration"></a>Nagios configuration</h6>
 <div class="paragraph">
-<p>Sakuli will produce HTML formatted output. <strong>HTML escaping</strong> in the monitoring core must be turned off:</p>
+<p>Use the Makefile located in <code>$OMD_ROOT/share/sakuli/</code> to</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>install predefined Nagios/Naemon service templates</p>
+</li>
+<li>
+<p>install the Sakuli logo</p>
+</li>
+<li>
+<p>enable HTML interpretation in the service output</p>
+</li>
+</ul>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code>OMD[sakuli]:~$ vim etc/nagios/cgi.cfg
-    escape_html_tags=0</code></pre>
+<pre class="CodeRay highlight"><code>OMD[demo]:~/share/sakuli/setup$ make config
+cp ./omd/local/lib/nagios/plugins/sakuli_screenshot_eventhandler.sh /omd/sites/demo/local/lib/nagios/plugins/
+cp ./omd/etc/nagios/conf.d/sakuli_screenshot_eventhandler.cfg /omd/sites/demo/etc/core/conf.d/
+mkdir -p /omd/sites/demo/local/share/nagios/htdocs/images/logos/
+cp ./omd/local/share/nagios/htdocs/images/logos/sakuli.png /omd/sites/demo/local/share/nagios/htdocs/images/logos/
+cp ./omd/etc/nagios/conf.d/sakuli_nagios_templates.cfg /omd/sites/demo/etc/core/conf.d/
+[ -w /omd/sites/demo/etc/core/cgi.cfg ] &amp;&amp; sed -i 's|\(escape_html_tags=\)1|\10|' /omd/sites/demo/etc/core/cgi.cfg || true
+sed -i 's|\(escape_html_tags=\)1|\10|' /omd/sites/demo/etc/thruk/cgi.cfg
+omd reload core || true
+Reloading naemon configuration (PID: 9114)... OK</code></pre>
 </div>
 </div>
 <div class="paragraph">
 <p>Now choose one of the <a href="#forwarders">Sakuli forwarder modules</a>.</p>
-</div>
 </div>
 </div>
 </div>
@@ -7077,88 +7098,54 @@ If you do not use a gearman-enabled monitoring system in a <a href="https://labs
 <div class="sect5">
 <h6 id="_omd_configuration"><a class="anchor" href="#_omd_configuration"></a>OMD Configuration</h6>
 <div class="sect6">
-<h7 id="_enable_the_site_s_mod_gearman_server"><a class="anchor" href="#_enable_the_site_s_mod_gearman_server"></a>Enable the site&#8217;s mod-gearman server</h7>
+<h7 id="_enable_and_configure_mod_gearman"><a class="anchor" href="#_enable_and_configure_mod_gearman"></a>Enable and configure mod-gearman</h7>
 <div class="paragraph">
-<p>Stop the OMD site:</p>
+<p>By default, mod_gearman does only accept AES encrypted packages. If you do not want to use encryption at all enable <code>accept_clear_results</code>:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code>OMD[sakuli]:~$ omd stop</code></pre>
+<pre class="CodeRay highlight"><code>OMD[demo]:~ vim ~/etc/mod-gearman/server.cfg
+...
+accept_clear_results=yes</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Start the OMD configuration menu</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code>OMD[sakuli]:~$ omd config</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Select <code>Distributed Monitoring</code> and</p>
+<p>Use the Makefile located in <code>$OMD_ROOT/share/sakuli/</code> to configure mod_gearman:</p>
 </div>
 <div class="ulist">
 <ul>
 <li>
-<p>-&gt; <code>GEARMAND</code> -&gt; <code>ON</code></p>
+<p>enable all services for mod_gearman</p>
 </li>
 <li>
-<p>-&gt; <code>GEARMAND_PORT</code> -&gt; <code><em>OMD_IP</em>:<em>GEARMAN_PORT</em></code> (default: 4730)</p>
+<p>set the bind IP and port (default: <code>0.0.0.0:4730</code>; overwrite with e.g. <code>export GEARMAND_PORT=192.168.130.10:4731</code>)</p>
 </li>
 <li>
-<p>-&gt; <code>GEARMAN_NEB</code> -&gt; <code>ON</code></p>
-</li>
-<li>
-<p>-&gt; <code>GEARMAN_WORKER</code> -&gt; <code>OFF</code> # only if workers aren&#8217;t still used</p>
-</li>
-<li>
-<p>-&gt; <code>MOD_GEARMAN</code> -&gt; <code>ON</code></p>
+<p>set the encryption key (default: <code>sakuli_secret</code>; overwrite with e.g. <code>export GEARMAN_SECRET=mykey</code>)</p>
 </li>
 </ul>
 </div>
-<div class="admonitionblock tip">
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code>OMD[demo]:~/share/sakuli/setup$ make gearman [enter]
+...</code></pre>
+</div>
+</div>
+<div class="admonitionblock note">
 <table>
 <tr>
 <td class="icon">
-<i class="fa icon-tip" title="Tip"></i>
+<i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-As Sakuli only uses the <em>result queue</em> of gearmand, you can disable all other queues unless you are using mod-gearman for regular checks:
+For security reasons, the Makefile will only configure mod-gearman if it is not enabled yet. If it is already enabled, inspect the Makefile, read the steps carefully and execute the steps by hand.
 </td>
 </tr>
 </table>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code>OMD[sakuli]:~$ vim ~/etc/mod-gearman/server.cfg
-eventhandler=no
-services=no
-hosts=no
-do_hostchecks=no</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Restart OMD:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code>OMD[sakuli]:~$ omd start</code></pre>
-</div>
-</div>
 </div>
 <div class="sect6">
 <h7 id="_create_a_nagios_service"><a class="anchor" href="#_create_a_nagios_service"></a>Create a Nagios service</h7>
-<div class="paragraph">
-<p>Use the Makefile located in <code>$OMD_ROOT/share/sakuli/</code> to install predefined Nagios/Naemon service templates (optional):</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code>OMD[foo]:~/share/sakuli/setup$ make config
-cp ./omd/etc/nagios/conf.d/sakuli_nagios_templates.cfg /omd/sites/foo/etc/core/conf.d/
-omd reload core
-Reloading naemon configuration (PID: 17405)... OK</code></pre>
-</div>
-</div>
 <div class="paragraph">
 <p>Create a service which should receive Sakuli test results. Host/service names derive from the following <a href="#property-loading-mechanism">properties</a>:</p>
 </div>
@@ -7174,7 +7161,14 @@ Reloading naemon configuration (PID: 17405)... OK</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code>define service {
+<pre class="CodeRay highlight"><code>define host {
+  host_name                      sakuli_client
+  alias                          sakuli_client
+  address                        __SAKULI_CLIENT_IP__
+  use                            generic-host
+}
+
+define service {
   service_description            example_xfce
   host_name                      sakuli_client
   use                            tpl_s_sakuli_gearman
@@ -7210,11 +7204,11 @@ Reloading naemon configuration (PID: 17405)... OK</code></pre>
 <pre class="CodeRay highlight"><code data-lang="properties">__INST_DIR__/example_test_suites/sakuli.properties:
 
 sakuli.forwarder.gearman.enabled=true
-sakuli.forwarder.gearman.encryption=false
-sakuli.forwarder.gearman.secret.key=secret_password
+sakuli.forwarder.gearman.encryption=true <i class="conum" data-value="1"></i><b>(1)</b>
+sakuli.forwarder.gearman.secret.key=secret_password <i class="conum" data-value="1"></i><b>(1)</b>
 sakuli.forwarder.gearman.server.host=__GEARMAN_IP__
 sakuli.forwarder.gearman.server.port=[Gearman Port defined in &quot;omd config&quot; (default:4730)]
-sakuli.forwarder.gearman.server.queue=check_results <i class="conum" data-value="1"></i><b>(1)</b>
+sakuli.forwarder.gearman.server.queue=check_results <i class="conum" data-value="2"></i><b>(2)</b>
 
 # Nagios host where all Sakuli services are defined on. If neccessary, override this value per test suite.
 # (Nagios service name is defined by testsuite.properties -&gt; suiteID)
@@ -7226,48 +7220,17 @@ sakuli.forwarder.gearman.nagios.check_command=check_sakuli</code></pre>
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Enable encryption and set the key only if you did not activate <code>accept_clear_results</code> in mod_gearman. Otherwise, set encryption to <code>false</code>.</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
 <td>Change this queue name if you use the <a href="#gearman_proxy">Sakuli Gearman proxy</a></td>
 </tr>
 </table>
 </div>
-</div>
-<div class="sect5">
-<h6 id="_using_aes_encryption_optional"><a class="anchor" href="#_using_aes_encryption_optional"></a>Using AES encryption (optional)</h6>
-<div class="paragraph">
-<p>The gearman forwarder supports AES encryption when sending checked results to the OMD server. The AES encryption uses a 32 byte (256 bit) secret key that
-has to be given in the <a href="#property-loading-mechanism">properties</a>.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="properties">sakuli.forwarder.gearman.encryption=true
-sakuli.forwarder.gearman.secret.key=secret_password</code></pre>
-</div>
-</div>
 <div class="paragraph">
 <p>In case you get a <code>java.lang.security.InvalidKeyException</code> with error message <em>"Illegal key size or default parameters"</em> you probably
 need to enable unlimited strength security policies in your Java JRE. This is done by adding a special security policy JAR to the Java JRE lib directory. For the Java JRE 8, take a look at <a href="http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html">Oracle - Java Cryptography Extension 8</a>.</p>
-</div>
-<div class="paragraph">
-<p>On the server side (OMD) you have to enable the encryption feature of <a href="https://labs.consol.de/nagios/mod-gearman/">mod-gearman</a>. Therefore the following two steps are necessary:</p>
-</div>
-<div class="paragraph">
-<p>1) Set the server side encryption password:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code> OMD[sakuli]:~$ echo "secret_password" &gt; ~/etc/mod-gearman/secret.key</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>2) Enable the <code>encryption</code> and disable <code>accept_clear_results</code> in the config file:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code> OMD[sakuli]:~$ vim ~/etc/mod-gearman/server.cfg
-
-encryption=yes
-accept_clear_results=yes</code></pre>
-</div>
 </div>
 </div>
 <div class="sect5">
@@ -7418,67 +7381,49 @@ If you do not use MySQL in a <a href="https://labs.consol.de/OMD/">OMD</a> envir
 <div class="sect6">
 <h7 id="_enabling_the_site_s_mysql_database"><a class="anchor" href="#_enabling_the_site_s_mysql_database"></a>Enabling the site&#8217;s MySQL Database</h7>
 <div class="paragraph">
-<p>If not already done for other reasons, a site-specific MySQL instance has to be started. That&#8217;s the place where all Sakuli clients will store their check results.</p>
+<p>If not already done for other reasons, a site-specific MySQL instance has to be started. That&#8217;s the place where Sakuli clients can store their check results.</p>
 </div>
 <div class="paragraph">
-<p>Stop the OMD site and start the OMD configuration menu:</p>
+<p>Use the Makefile located in <code>$OMD_ROOT/share/sakuli/</code> to configure mysql:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>enable MySQL in OMD</p>
+</li>
+<li>
+<p>create &amp; initialize the database</p>
+</li>
+<li>
+<p>install check_mysql_health Perl module to check the Sakuli result database, configure the check_command</p>
+</li>
+<li>
+<p>create the sakuli user (default: <code>sakuli</code>; overwrite with e.g. <code>export MYSQL_USER=alice</code>)</p>
+</li>
+<li>
+<p>set the password of sakuli user (default: <code>sakuli</code>; overwrite with e.g. <code>export MYSQL_PASSWORD=topsecret</code>)</p>
+</li>
+<li>
+<p>set the bind IP (default: <code>0.0.0.0</code>; overwrite with e.g. <code>export MYSQL_BINDADDRESS=192.168.130.10</code>)</p>
+</li>
+<li>
+<p>set the bind port (default: <code>3306</code>; overwrite with e.g. <code>export MYSQL_PORT=3377</code>)</p>
+</li>
+</ul>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">OMD[sakuli]:~$ omd stop
- ...
-OMD[sakuli]:~$ omd config</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Select <em>Addons -&gt; MYSQL -&gt; ON</em> and exit the menu.</p>
-</div>
-<div class="paragraph">
-<p>Open <code>~/.my.cnf</code> and set the following values:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">OMD[sakuli]:~$ vim .my.cnf
-# make sure to choose a free port, e.g. 3007
-port = __DB_PORT__
-# bind on all interfaces
-bind-address = 0.0.0.0
-# enable network access
-#skip-networking</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Create the system tables for the new database and start OMD afterwards. You should see now OMD coming up with a <strong>dedicated MySQL instance</strong>:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">OMD[sakuli]:~$ mysql_install_db
-OMD[sakuli]:~$ omd start
-Starting dedicated Apache for site sakuli...OK
-Starting MySQL... .OK.
-Starting rrdcached...OK
-Starting npcd...OK
-Starting nagios...OK
-Initializing Crontab...</code></pre>
+<pre class="CodeRay highlight"><code>OMD[demo]:~/share/sakuli/setup$ make mysql [enter]
+...</code></pre>
 </div>
 </div>
 </div>
 <div class="sect6">
-<h7 id="_create_sakuli_db_and_user"><a class="anchor" href="#_create_sakuli_db_and_user"></a>create Sakuli DB and user</h7>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>Create the <strong>Sakuli database</strong> as described here: <a href="#sql-database-create-db">Create Sakuli DB</a></p>
-</li>
-<li>
-<p>Check the connection with <em>check_mysql_health</em>:</p>
-</li>
-</ol>
-</div>
+<h7 id="_check_the_connection_to_the_sakuli_db"><a class="anchor" href="#_check_the_connection_to_the_sakuli_db"></a>check the connection to the Sakuli DB</h7>
 <div class="listingblock">
 <div class="content">
-<pre>OMD[sakuli]:~$  lib/nagios/plugins/check_mysql_health -H __DB_IP__ --username __DB_USER__ --password __DB_PASSWORD__ --database sakuli --port __DB_PORT__ --mode connection-time
-  OK - 0.24 seconds to connect as sakuli | connection_time=0.2366s;1;5</pre>
+<pre class="CodeRay highlight"><code data-lang="bash">OMD[sakuli]:~$  lib/nagios/plugins/check_mysql_health -H __DB_IP__ --username sakuli --password sakuli --database sakuli --port 3306 --mode connection-time
+  OK - 0.24 seconds to connect as sakuli | connection_time=0.2366s;1;5</code></pre>
 </div>
 </div>
 </div>
@@ -7488,20 +7433,9 @@ Initializing Crontab...</code></pre>
 <p>Nagios fetches Sakuli check results using the plugin <a href="http://labs.consol.de/lang/de/nagios/check_mysql_health/">check_mysql_health</a>, which is already contained in OMD.</p>
 </div>
 <div class="paragraph">
-<div class="title">CheckMySQLHealthSakuli.pm</div>
 <p>The Perl module <code>CheckMySQLHealthSakuli.pm</code> enhances the functionality of <em>check_mysql_health</em> by introducing the mode <code>--my-sakuli-suite</code>.</p>
 </div>
 <div class="paragraph">
-<p>Create a config directory for <em>check_mysql_health</em> and <strong>copy the module</strong> there:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">OMD[sakuli]:~$ mkdir etc/check_mysql_health
-OMD[sakuli]:~$ cp __TEMP__/setup/nagios/CheckMySQLHealthSakuli.pm etc/check_mysql_health/</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<div class="title">resource.cfg</div>
 <p>Set <strong>USER macros</strong> for static vars in <code>resource.cfg</code>, which makes it easy to use them in all nagios checks:</p>
 </div>
 <div class="listingblock">
@@ -7516,59 +7450,37 @@ OMD[sakuli]:~$ cp __TEMP__/setup/nagios/CheckMySQLHealthSakuli.pm etc/check_mysq
   # database port
   $USER13$=__DB_PORT__
   # check_mysql_health module dir
-  $USER15$=/opt/omd/sites/sakuli/etc/check_mysql_health/
+  $USER15$=~/etc/check_mysql_health/
   # database IP
   $USER16$=__MySQL_Database_IP__</code></pre>
 </div>
 </div>
+</div>
+<div class="sect6">
+<h7 id="_create_a_nagios_service_2"><a class="anchor" href="#_create_a_nagios_service_2"></a>create a Nagios service</h7>
 <div class="paragraph">
-<div class="title">Nagios configuration</div>
-<p>Create a new <strong>check_command</strong>:</p>
+<p>Create the following <strong>host/service object</strong> for the first test case. Note the ARG2 in check_command: the database check will only evaluate the last result if it is max. 180 seconds old. If older, the check will return UNKNOWN. (For comparison: this is equivalent to "freshness_threshold" if you would use the <a href="#omd-gearman">Gearman forwarder</a>.</p>
+</div>
+<div class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+PNP4Nagios: you should set the <a href="#pnp4nagios-rrd-heartbeat">RRD heartbeat</a> to the same value to get a realistic gap in the graph if recent client results are missing. Otherwise the heartbeat of 2 hours will fill up the graph.
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">OMD[sakuli]:~$ vim etc/nagios/conf.d/commands.cfg
-
-# check_command for Sakuli
-# --name = Suite ID
-# --name2 = number of seconds the last result is allowed to be old
-define command {
-  command_name                   check_sakuli
-  command_line                   $USER1$/check_mysql_health \
-    --hostname=$USER16$ \
-    --database=$USER10$ \
-    --username=$USER11$ \
-    --password=$USER12$ \
-    --mode=my-sakuli-suite \
-    --name='$ARG1$' \
-    --name2=$ARG2$ \
-    --report=html \
-    --port=$USER13$ \
-    --with-mymodules-dyn-dir=$USER15$
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Create a <strong>host object</strong> for Sakuli database checks (the checks are executed on the <em>local</em> machine, but belong logically to <em>sakuli_client</em>):</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">OMD[sakuli]:~$ vim etc/nagios/conf.d/hosts.cfg
-
-define host {
+<pre class="CodeRay highlight"><code data-lang="bash">define host {
   host_name                      sakuli_client
   alias                          sakuli_client
   address                        __SAKULI_CLIENT_IP__
   use                            generic-host
-}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Create the following <strong>service object</strong> for the first test case. Note the ARG2 in check_command: the database check will only evaluate the last result if it is max. 180 seconds old. If older, the check will return UNKNOWN. (For comparison: this is equivalent to "freshness_threshold" if you would use the <a href="#omd-gearman">Gearman forwarder</a>. In any case, you should set the <a href="#pnp4nagios-rrd-heartbeat">RRD heartbeat</a> to the same value to get a gap in the graph if recent client results are missing. )</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">OMD[sakuli]:~$ vim etc/nagios/conf.d/services.cfg
+}
 
 define service {
   # service_description            example_windows7
@@ -7581,11 +7493,11 @@ define service {
 </div>
 </div>
 <div class="paragraph">
-<p>Reload OMD:</p>
+<p>Reload the monitoring core:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">omd reload</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">omd reload core</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -7643,13 +7555,8 @@ define service {
 <div class="paragraph">
 <p>Sakuli&#8217;s database can get very large over time. Use the following database maintenance script to keep only the most recent data.</p>
 </div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">OMD[sakuli]:~$ cp `__SAKULI_HOME__/bin/helper/mysql_purge.sh local/bin/`</code></pre>
-</div>
-</div>
 <div class="paragraph">
-<p>Create a OMD crontab entry for a automatic database cleanup of data older than 90 days:</p>
+<p>Uncomment and adapt the preinstalled OMD crontab entry:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -8019,37 +7926,21 @@ sakuli.forwarder.check_mk.service_description=My_Custom_Service</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">OMD[demo]:~/share/sakuli/setup$ make screenshot_history
-cp ./omd/local/lib/nagios/plugins/sakuli_screenshot_eventhandler.sh /omd/sites/demo/local/lib/nagios/plugins/
-cp ./omd/etc/nagios/conf.d/sakuli_screenshot_eventhandler.cfg /omd/sites/demo/etc/core/conf.d/
-cp ./omd/local/bin/sakuli_screenshot_cleanup.sh /omd/sites/demo/local/bin/
-cp ./omd/etc/cron.d/sakuli_screenshot_cleanup /omd/sites/demo/etc/cron.d/
-cp ./omd/etc/thruk/ssi/*.ssi /omd/sites/demo/etc/thruk/ssi/
-cp ./omd/etc/thruk/thruk_local.d/sakuli_action_menu.conf /omd/sites/demo/etc/thruk/thruk_local.d/
-cp ./omd/etc/apache/conf.d/sakuli_screenshots.conf /omd/sites/demo/etc/apache/conf.d/
-omd reload crontab
-Removing Crontab...OK
-Initializing Crontab...OK
-omd reload apache
-Reloading dedicated Apache for site demo
-omd reload core
-Reloading naemon configuration (PID: 3511)... OK</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">OMD[demo]:~/share/sakuli/setup$ make screenshot_history</code></pre>
 </div>
 </div>
 </div>
 <div class="sect5">
-<h6 id="screenshot_history_eh"><a class="anchor" href="#screenshot_history_eh"></a>Event handler</h6>
+<h6 id="screenshot_history_eh"><a class="anchor" href="#screenshot_history_eh"></a>Event handler template</h6>
 <div class="paragraph">
-<p>Now assign the command <code>sakuli_screenshot_eventhandler</code> to all Sakuli services:</p>
+<p>Use the service template <code>tpl_s_sakuli_screenshot_history</code> in all Sakuli services to enable the eventhandler:</p>
 </div>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code>define service {
   service_description            example_xfce
   host_name                      sakuli_client
-  use                            tpl_s_sakuli_gearman_grafana
-  event_handler                  sakuli_screenshot_eventhandler
-  event_handler_enabled          1
+  use                            tpl_s_sakuli_gearman_grafana, tpl_s_sakuli_screenshot_history
 }</code></pre>
 </div>
 </div>
@@ -10816,7 +10707,7 @@ Website: <a href="http://www.consol.de">www.consol.de</a></p>
 <div id="footer">
 <div id="footer-text">
 Version v1.1.0-SNAPSHOT<br>
-Last updated 2017-08-02 11:18:23 CEST
+Last updated 2017-08-04 15:36:27 CEST
 </div>
 </div>
 <!--
