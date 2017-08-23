@@ -599,7 +599,7 @@ table.CodeRay td.code>pre{padding:0}
 <span id="author" class="author">The Sakuli Team</span><br>
 <span id="email" class="email"><a href="mailto:sakuli@consol.de">sakuli@consol.de</a></span><br>
 <span id="revnumber">version v1.1.0-SNAPSHOT,</span>
-<span id="revdate">04.08.2017 @ 16:29:51 CEST</span>
+<span id="revdate">23.08.2017 @ 12:29:27 CEST</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Sakuli E2E</div>
@@ -7484,7 +7484,7 @@ java%sakuli.jar</code></pre>
 <p><strong>Disable any image compression algorithms</strong> in your screenshot capturing program (Greenshot, Shutter, …). Otherwise Sikuli will compare <em>compressed</em> pattern images with <em>umcompressed</em> image data on the screen, which will fail for sure.</p>
 </li>
 <li>
-<p>Sikuli uses a <strong><a href="http://doc.sikuli.org/region.html">similarity</a></strong> value of <strong>0.99 by default</strong>. That value (range: 0-0.99) determines that more than (X * 100) % of the region pixels have to match. If Sikuli does not recognize anything or the wrong regions, try to <strong>slightly</strong> decrease the similarity** by changing 'sakuli.region.similarity.default' globally or inside a test e.g. with <code>env.setSimilarity(0.8)</code>. This should only be neccessary if the pattern images are of poor quality or the screen always differs slightly from the pattern images (e.g. due to compression of remote sessions like vnc). Please note that a similarity of "1" would mean that "more than 100%" of the region pixels would have to match - which is completely wrong.</p>
+<p>Sikuli uses a <strong><a href="http://doc.sikuli.org/region.html">similarity</a></strong> value of <strong>0.99 by default</strong>. That value (range: 0-0.99) determines that more than (X * 100) % of the region pixels have to match. If Sikuli does not recognize anything or the wrong regions, try to <strong>slightly</strong> decrease the similarity by changing <code>sakuli.region.similarity.default</code> globally or inside a test e.g. with <code>env.setSimilarity(0.8)</code>. This should only be neccessary if the pattern images are of poor quality or the screen always differs slightly from the pattern images (e.g. due to compression of remote sessions like vnc). Please note that a similarity of "1" would mean that "more than 100%" of the region pixels would have to match - which is completely wrong.</p>
 </li>
 </ul>
 </div>
@@ -7492,13 +7492,30 @@ java%sakuli.jar</code></pre>
 <div class="sect4">
 <h5 id="_missing_keystrokes_on_type_or_failing_paste"><a class="anchor" href="#_missing_keystrokes_on_type_or_failing_paste"></a>1.3.3.4. Missing keystrokes on type or failing paste</h5>
 <div class="paragraph">
-<p>Sikuli keyboard events (<code>type()`and `paste()</code>) on a Sahi-controlled browser instance can get lost if they are executed at the same time when Sahi internal status requests are sent from the browser to the Sahi proxy (default: 10x per sec).</p>
+<p>Sikuli keyboard events <code>type()</code> and <code>paste()</code> on a Sahi-controlled browser instance can get lost if they are executed at the same time when Sahi internal status requests are sent from the browser to the Sahi proxy (default: 10x per sec).</p>
 </div>
 <div class="paragraph">
-<p>For this reason, Sikuli type/paste methods first extend the Sahi status interval to the value of <code>sahi.proxy.onSikuliInput.delayPerKey</code> (in ms) which is long enough to execute <em>one</em> keyboard action. For the method <code>type</code> (which is "press/release character by character"&quot;), a multiple if this value is chosen. Before leaving the paste/type method, the interval gets reset by Sakuli to the default Sahi status interval.</p>
+<p>For this reason, Sikuli type/paste methods first extend the Sahi status interval to the value of <code>sahi.proxy.onSikuliInput.delayPerKey</code> (in ms) which is long enough to execute <em>one</em> keyboard action. For the method <code>type</code> (which is "press/release" character by character), a multiple if this value is chosen. Before leaving the paste/type method, the interval gets reset by Sakuli to the default Sahi status interval.</p>
 </div>
-<div class="paragraph">
-<p>This setting is not needed if Sikuli does keyboard actions on GUIs not controlled by Sahi.</p>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="properties"># some recommended values for correct pasting and typing
+# sakuli.properties
+
+sahi.proxy.onSikuliInput.delayPerKey=500</code></pre>
+</div>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-important" title="Important"></i>
+</td>
+<td class="content">
+This setting is not needed if Sikuli does keyboard actions on <strong>GUIs not controlled by Sahi</strong>.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect4">
@@ -11284,7 +11301,7 @@ Website: <a href="http://www.consol.de">www.consol.de</a></p>
 <div id="footer">
 <div id="footer-text">
 Version v1.1.0-SNAPSHOT<br>
-Last updated 2017-08-04 16:29:53 CEST
+Last updated 2017-08-23 12:29:29 CEST
 </div>
 </div>
 <!--
