@@ -608,7 +608,7 @@ table.CodeRay td.code>pre{padding:0}
 <span id="author" class="author">The Sakuli Team</span><br>
 <span id="email" class="email"><a href="mailto:sakuli@consol.de">sakuli@consol.de</a></span><br>
 <span id="revnumber">version v1.1.0-SNAPSHOT,</span>
-<span id="revdate">01.09.2017 @ 14:04:13 CEST</span>
+<span id="revdate">01.09.2017 @ 17:19:51 CEST</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Sakuli E2E</div>
@@ -679,6 +679,8 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#docker-extend-a-image">Extend a Sakuli Image with your own software</a></li>
 <li><a href="#_change_user_of_running_sakuli_container">Change User of running Sakuli Container</a></li>
 <li><a href="#docker-vnc-env-variables">Override VNC environment variables</a></li>
+<li><a href="#_create_screenhots_for_sakuli_tests">Create Screenhots for Sakuli tests</a></li>
+<li><a href="#_view_only_vnc">View only VNC</a></li>
 <li><a href="#docker-further-information">Further Information</a></li>
 </ul>
 </li>
@@ -760,7 +762,7 @@ table.CodeRay td.code>pre{padding:0}
 <ul class="sectlevel4">
 <li><a href="#_growing_firefox_profile_folder">1.3.3.1. Growing Firefox profile folder</a></li>
 <li><a href="#_hanging_applications">1.3.3.2. Hanging applications</a></li>
-<li><a href="#_sikuli_does_not_recognize_images">1.3.3.3. Sikuli does not recognize images</a></li>
+<li><a href="#image-recognition-problem">1.3.3.3. Sikuli does not recognize images</a></li>
 <li><a href="#_missing_keystrokes_on_type_or_failing_paste">1.3.3.4. Missing keystrokes on type or failing paste</a></li>
 <li><a href="#_application_getregion_returns_null">1.3.3.5. Application.getRegion() returns NULL</a></li>
 </ul>
@@ -2706,7 +2708,7 @@ The running containers are accessible with VNC (default password: <code>sakuli</
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">docker pull consol/sakuli-centos-xfce</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">~$ docker pull consol/sakuli-centos-xfce</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2714,8 +2716,8 @@ The running containers are accessible with VNC (default password: <code>sakuli</
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">git clone https://github.com/ConSol/sakuli.git
-docker build -t consol/sakuli-centos-xfce docker/sakuli-centos-xfce .</code></pre>
+<pre class="CodeRay highlight"><code data-lang="bash">~$ git clone https://github.com/ConSol/sakuli.git
+~$ docker build -t consol/sakuli-centos-xfce docker/sakuli-centos-xfce .</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2725,9 +2727,9 @@ docker build -t consol/sakuli-centos-xfce docker/sakuli-centos-xfce .</code></pr
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="bash"># default tag &quot;latest&quot; = Sakuli stable
-docker run -it -p 5901:5901 -p 6901:6901 consol/sakuli-centos-xfce
+~$ docker run -it -p 5901:5901 -p 6901:6901 consol/sakuli-centos-xfce
 # tag &quot;dev&quot; = Sakuli Snapshot version of dev branch
-docker run -it -p 5901:5901 -p 6901:6901 consol/sakuli-centos-xfce:dev</code></pre>
+~$ docker run -it -p 5901:5901 -p 6901:6901 consol/sakuli-centos-xfce:dev</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2916,7 +2918,7 @@ USER 1984</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code>docker run -it --user 0 -p 6911:6901 consol/sakuli-ubuntu-xfce</code></pre>
+<pre class="CodeRay highlight"><code>~$ docker run -it --user 0 -p 6911:6901 consol/sakuli-ubuntu-xfce</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2925,7 +2927,7 @@ USER 1984</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code>docker run -it -p 6911:6901 --user $(id -u):$(id -g) consol/sakuli-ubuntu-xfce</code></pre>
+<pre class="CodeRay highlight"><code>~$ docker run -it -p 6911:6901 --user $(id -u):$(id -g) consol/sakuli-ubuntu-xfce</code></pre>
 </div>
 </div>
 </div>
@@ -2958,6 +2960,81 @@ USER 1984</code></pre>
 </div>
 </div>
 <div class="sect5">
+<h6 id="_create_screenhots_for_sakuli_tests"><a class="anchor" href="#_create_screenhots_for_sakuli_tests"></a>Create Screenhots for Sakuli tests</h6>
+<div class="paragraph">
+<p>Due to the fact, that your application under test is running in the container specific UI environment, it&#8217;s also recommend to create the screenhot snippets for the <a href="#sakuli-testdefintion">Sakuli Testdefinition</a> in the inside of the container. This prevent some issues with recognizing images because of bad image compression, see <a href="#image-recognition-problem">Sikuli does not recognize images</a>.</p>
+</div>
+<div class="sect6">
+<h7 id="_use_code_takescreenshot_code_method"><a class="anchor" href="#_use_code_takescreenshot_code_method"></a>Use <code>takeScreenshot</code> method</h7>
+<div class="paragraph">
+<p>To get a new screenshot of some application window, you can modify you current test case and add for example the bellow code snippets of the method <a href="#Region.takeScreenshot">Region.takeScreenshot(filename)</a>:</p>
+</div>
+<div id="source" class="listingblock">
+<div class="content">
+<pre>//entire screen:
+env.takeScreenshot("/tmp/my-screenshot.png");
+
+//specific region
+new RegionRectangle(0,0,100,100).takeScreenshot("/tmp/my-screenshot.png");
+
+//extended region of an existing one
+new Region().find("calculator-logo.png").grow(200,200).takeScreenshot("/tmp/my-screenshot.png");</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>After the test suite run, you can copy out the created screenshot from docker container, if needed crop it with some image manipulating tool, and add it to our test suite.</p>
+</div>
+<div id="source" class="listingblock">
+<div class="content">
+<pre>~$ docker cp &lt;containter-id&gt;:/tmp/my-scrot-screenshot.png $(pwd)/my-testsuite/
+~$ ls -la my-testsuite/</pre>
+</div>
+</div>
+</div>
+<div class="sect6">
+<h7 id="_use_code_scrot_code_tool"><a class="anchor" href="#_use_code_scrot_code_tool"></a>Use <code>scrot</code> tool</h7>
+<div class="paragraph">
+<p>Before using <strong><a href="https://wiki.ubuntuusers.de/Scrot/">Scrot</a></strong> prepare your container UI like you will needed for the screenshot via VNC <code><a href="http://&lt;dockerhost&gt;:&lt;mapped-port&gt;/vnc_auto.html?password=sakuli" class="bare">http://&lt;dockerhost&gt;:&lt;mapped-port&gt;/vnc_auto.html?password=sakuli</a></code>. If you wan&#8217;t to stop the sakuli test execution on a particular point, just use the <a href="#Environment.sleep">Environment.sleep(seconds)</a> method:</p>
+</div>
+<div id="source" class="listingblock">
+<div class="content">
+<pre>    new Application("/usr/bin/gnome-calculator").open();
+    env.sleep(Number.MAX_VALUE);</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The test case will stop at the above defined position. Then you can login to the container via <code>docker exec</code> and create a new screenshot with the <code>scrot &lt;filename&gt;</code> command. If you use the <code>scrot -s</code> flag you can select a rectangle, over the VNC control page <code><a href="http://&lt;docker-host&gt;:&lt;mapped-port&gt;/vnc_auto.html?password=sakuli" class="bare">http://&lt;docker-host&gt;:&lt;mapped-port&gt;/vnc_auto.html?password=sakuli</a></code>.</p>
+</div>
+<div id="source" class="listingblock">
+<div class="content">
+<pre>~$ docker exec -it &lt;container-id&gt; bash
+~$ scrot -s /tmp/my-scrot-screenshot.png
+~$ ls -la /tmp/*.png
+-rw-rw-rw- 1 default root 35329 Aug 29 15:28 /tmp/my-scrot-screenshot.png</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Now you can copy out the created screenshot from docker container and add it to our test suite.</p>
+</div>
+<div id="source" class="listingblock">
+<div class="content">
+<pre>~$ docker cp &lt;containter-id&gt;:/tmp/my-scrot-screenshot.png $(pwd)/my-testsuite/</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_view_only_vnc"><a class="anchor" href="#_view_only_vnc"></a>View only VNC</h6>
+<div class="paragraph">
+<p>To prevent unwanted control over the VNC connection, it&#8217;s possible to set environment variable <code>VNC_VIEW_ONLY=true</code>. If set the docker startup script will create a random cryptic password for the control connection and use the value of <code>VNC_PW</code> for the view only connection.</p>
+</div>
+<div id="source" class="listingblock">
+<div class="content">
+<pre>~$ docker run -it -p 6901:6901 -e VNC_VIEW_ONLY=true  consol/sakuli-ubuntu-xfce</pre>
+</div>
+</div>
+</div>
+<div class="sect5">
 <h6 id="docker-further-information"><a class="anchor" href="#docker-further-information"></a>Further Information</h6>
 <div class="paragraph">
 <p>Further information about the usage of Sakuli docker containers can be found at:</p>
@@ -2971,7 +3048,7 @@ USER 1984</code></pre>
 <p><a href="#kubernetes">Kubernetes</a></p>
 </li>
 <li>
-<p><a href="#omd-containerized">[omd-containerized]</a></p>
+<p><a href="https://github.com/ConSol/omd-labs-docker">Containerized OMD</a></p>
 </li>
 <li>
 <p>Publications:</p>
@@ -7481,7 +7558,7 @@ java%sakuli.jar</code></pre>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_sikuli_does_not_recognize_images"><a class="anchor" href="#_sikuli_does_not_recognize_images"></a>1.3.3.3. Sikuli does not recognize images</h5>
+<h5 id="image-recognition-problem"><a class="anchor" href="#image-recognition-problem"></a>1.3.3.3. Sikuli does not recognize images</h5>
 <div class="paragraph">
 <p>If Sikuli does not recognize regions on the screen or does recognize the wrong ones, check the following list of possible reasons:</p>
 </div>
@@ -11332,7 +11409,7 @@ Website: <a href="http://www.consol.de">www.consol.de</a></p>
 <div id="footer">
 <div id="footer-text">
 Version v1.1.0-SNAPSHOT<br>
-Last updated 2017-09-01 14:04:15 CEST
+Last updated 2017-09-01 17:19:53 CEST
 </div>
 </div>
 <!--
