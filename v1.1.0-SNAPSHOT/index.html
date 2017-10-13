@@ -608,7 +608,7 @@ table.CodeRay td.code>pre{padding:0}
 <span id="author" class="author">The Sakuli Team</span><br>
 <span id="email" class="email"><a href="mailto:sakuli@consol.de">sakuli@consol.de</a></span><br>
 <span id="revnumber">version v1.1.0-SNAPSHOT,</span>
-<span id="revdate">12.10.2017 @ 20:02:26 CEST</span>
+<span id="revdate">13.10.2017 @ 16:07:22 CEST</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Sakuli E2E</div>
@@ -661,7 +661,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#_usage">Usage</a></li>
 <li><a href="#_sakuli_java_example">Sakuli Java Example</a></li>
 <li><a href="#_installation_3">Installation</a></li>
-<li><a href="#_https_sites">HTTPS-Sites</a></li>
+<li><a href="#java-dsl-https">HTTPS-Sites</a></li>
 </ul>
 </li>
 </ul>
@@ -681,6 +681,7 @@ table.CodeRay td.code>pre{padding:0}
 <li><a href="#docker-vnc-env-variables">Override VNC environment variables</a></li>
 <li><a href="#_create_screenhots_for_sakuli_tests">Create Screenhots for Sakuli tests</a></li>
 <li><a href="#_view_only_vnc">View only VNC</a></li>
+<li><a href="#docker-https-sahi">Writing HTTPS Sahi web tests</a></li>
 <li><a href="#docker-further-information">Further Information</a></li>
 </ul>
 </li>
@@ -2544,9 +2545,9 @@ If needed change the &lt;path&gt; for your own locations of each browser!
 </div>
 </div>
 <div class="sect5">
-<h6 id="_https_sites"><a class="anchor" href="#_https_sites"></a>HTTPS-Sites</h6>
+<h6 id="java-dsl-https"><a class="anchor" href="#java-dsl-https"></a>HTTPS-Sites</h6>
 <div class="paragraph">
-<p>As workaround for issue <a href="https://github.com/ConSol/sakuli/issues/131">#131</a> you can follow the intructions of <a href="#sahi-https">HTTPS support in Sahi</a> and copy afterwards the files from <code>java-example/target/classes/sahi/userdata/certs</code> to <code>java-example/src/main/resources/sahi/userdata/certs</code>. This will copy the trusted certificates when building the project and allows a clean run.</p>
+<p>As workaround for issue <a href="https://github.com/ConSol/sakuli/issues/131">#131</a> you can follow the intructions of <a href="#sahi-https">HTTPS support in Sahi</a> and copy afterwards the files from <code>java-example/target/classes/sahi/userdata/certs</code> to <code>java-example/src/main/resources/sahi/userdata/certs</code>. This will copy the trusted certificates when building the project and allows a clean run. Also see <a href="#sahi-https-automatic-certificate-usage">Automatic HTTPS Certificate Usage</a> which files have to been copied for running the tests on different host.</p>
 </div>
 </div>
 </div>
@@ -3035,6 +3036,88 @@ new Region().find("calculator-logo.png").grow(200,200).takeScreenshot("/tmp/my-s
 <div class="content">
 <pre>~$ docker run -it -p 6901:6901 -e VNC_VIEW_ONLY=true  consol/sakuli-ubuntu-xfce</pre>
 </div>
+</div>
+</div>
+<div class="sect5">
+<h6 id="docker-https-sahi"><a class="anchor" href="#docker-https-sahi"></a>Writing HTTPS Sahi web tests</h6>
+<div class="paragraph">
+<p>Depending on the Sahi proxy, Sakuli will break the HTTPS connections between the website and test engine. Due to that case it is necessary to import the URL specific self-signed certificates like described at <a href="#sahi-https">HTTPS support in Sahi</a>. In a containerized environment we need to prepare the browser before the tests starts with the expected certificates like described at <a href="#sahi-https-automatic-certificate-usage">Automatic HTTPS Certificate Usage</a>. For example if you use the Firefox browser you can do the following steps:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Start your preferred Sakuli docker image with <code>docker run -it -p 6901:6901 consol/sakuli-ubuntu-xfce bash</code> to enter the container and connect into it by VNC <a href="http://localhost:6901/vnc_auto.html?password=sakuli" class="bare">http://localhost:6901/vnc_auto.html?password=sakuli</a></p>
+</li>
+<li>
+<p>Start Sahi dashboard:</p>
+<div class="literalblock">
+<div class="content">
+<pre>~$ cd $SAKULI_ROOT/sahi/userdata/bin &amp;&amp; ./start_dashboard.sh</pre>
+</div>
+</div>
+</li>
+<li>
+<p>Create the firefox certificates for <a href="https://labs.consol.de" class="bare">https://labs.consol.de</a> like described at <a href="#sahi-https-accept-self-signed">Sahi HTTPS - Accept self-signed certificates</a></p>
+</li>
+<li>
+<p>Now copy the following created files to a folder at your dockerhost:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Sahi fake certificates</p>
+<div class="literalblock">
+<div class="content">
+<pre>~$ mkdir -p ssl_files
+~$ export CONAINER_ID=&lt;your-docker-container-id&gt;
+~$ docker cp $CONAINER_ID:/headless/sakuli/sahi/userdata/certs ssl_files/sahi_certs</pre>
+</div>
+</div>
+</li>
+<li>
+<p>Firefox ertificate store</p>
+<div class="literalblock">
+<div class="content">
+<pre>~$ mkdir -p ssl_files/ff_profile
+~$ docker cp $CONAINER_ID:/headless/sakuli/sahi/userdata/browser/ff/profiles/sahi0/cert8.db ssl_files/ff_profile/
+~$ docker cp $CONAINER_ID:/headless/sakuli/sahi/userdata/browser/ff/profiles/sahi0/key3.db  ssl_files/ff_profile/
+~$ docker cp $CONAINER_ID:/headless/sakuli/sahi/userdata/browser/ff/profiles/sahi0/cert_override.txt ssl_files/ff_profile/</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>After this you should have the following structure:</p>
+<div class="literalblock">
+<div class="content">
+<pre>~$ tree ssl_files
+ssl_files
+├── ff_profile
+│   ├── cert8.db
+│   ├── cert_override.txt
+│   └── key3.db
+└── sahi_certs
+    ├── labs_consol_de
+    ├── sahi_example_com
+    ├── shavar_services_mozilla_com
+    └── tiles_services_mozilla_com
+2 directories, 7 files</pre>
+</div>
+</div>
+</li>
+<li>
+<p>At least you have just to add the files to the correct place in Docker image <code>Dockerfile</code>:</p>
+<div class="literalblock">
+<div class="content">
+<pre>FROM consol/sakuli-ubuntu-xfce
+### INSTALL sahi https certificats
+COPY ssl_files/ff_profile $SAKULI_ROOT/sahi/config/ff_profile_template
+COPY ssl_files/sahi_certs $SAKULI_ROOT/sahi/userdata/certs</pre>
+</div>
+</div>
+</li>
+</ol>
 </div>
 </div>
 <div class="sect5">
@@ -7342,7 +7425,7 @@ ext.http.both.proxy.bypass_hosts=localhost|127.0.0.1|*.internaldomain.com|www.ve
 <p>This documentation is not complete yet. Any help is appreciated.</p>
 </div>
 <div class="sect6">
-<h7 id="_solution_1_accept_self_signed_certificates"><a class="anchor" href="#_solution_1_accept_self_signed_certificates"></a>Solution 1: accept self-signed certificates</h7>
+<h7 id="sahi-https-accept-self-signed"><a class="anchor" href="#sahi-https-accept-self-signed"></a>Solution 1: accept self-signed certificates</h7>
 <div class="paragraph">
 <p>This will work on most systems, especially the ones you have full control over.</p>
 </div>
@@ -7379,7 +7462,7 @@ ext.http.both.proxy.bypass_hosts=localhost|127.0.0.1|*.internaldomain.com|www.ve
 </div>
 </div>
 <div class="sect6">
-<h7 id="_solution_2_manual_certificate_import"><a class="anchor" href="#_solution_2_manual_certificate_import"></a>Solution 2: manual certificate import</h7>
+<h7 id="sahi-https-certificate-import"><a class="anchor" href="#sahi-https-certificate-import"></a>Solution 2: manual certificate import</h7>
 <div class="admonitionblock warning">
 <table>
 <tr>
@@ -7481,7 +7564,7 @@ This is a browser-specific solution and can be different in newer Browser versio
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-Ensure that firefox really save the certificates permanently! <span class="image"><img src="images/tutorial_certs_ff_save.png" alt="firefox save certificates"></span>
+Ensure that Firefox really save the certificates permanently! <span class="image"><img src="images/tutorial_certs_ff_save.png" alt="Firefox save certificates"></span>
 </td>
 </tr>
 </table>
@@ -7489,6 +7572,96 @@ Ensure that firefox really save the certificates permanently! <span class="image
 <div class="paragraph">
 <div class="title">Internet Explorer</div>
 <p>See Sahi description <a href="http://sahipro.com/docs/using-sahi/sahi-configuration-basic.html#Configure%20SSL">Configure SSL in Sahi</a>.</p>
+</div>
+</div>
+<div class="sect6">
+<h7 id="sahi-https-automatic-certificate-usage"><a class="anchor" href="#sahi-https-automatic-certificate-usage"></a>Automatic HTTPS Certificate Usage</h7>
+<div class="paragraph">
+<p>To run your tests on different hosts, <a href="#containerized-execution">Containerized Execution</a> or orchestrated by some continuous integration tool(e.g. <a href="#jenkins-integration">Jenkins</a>), it&#8217;s necessary that you can share the HTTPS config for different hosts.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+The usage is described for the Firefox browser. For other browser try to copy there certificate store.
+</td>
+</tr>
+</table>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>You have to accept the Sahi fake certificates, like seen above:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="#sahi-https-accept-self-signed">Solution 1: accept self-signed certificates</a></p>
+</li>
+<li>
+<p><a href="#sahi-https-certificate-import">Solution 2: manual certificate import</a></p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Now two things happend:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Sahi added a Java Keystore for each accepted certificate domain (e.g. <code>sahi_example_com</code>, <code>www_github_com</code>) in <code>~/sakuli/sahi/userdata/certs/</code>.</p>
+</li>
+<li>
+<p>The Firefox profile <code>~/sakuli/sahi/userdata/browser/ff/profiles/sahi0</code> now contains an updated version of:</p>
+<div class="ulist">
+<ul>
+<li>
+<p><code>cert8.db</code> - certificate store</p>
+</li>
+<li>
+<p><code>key3.db</code> - key parts of certificates</p>
+</li>
+<li>
+<p><code>cert_override.txt</code> - list of certificate exceptions</p>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Ensure that above files will be copied before the tests starts like described here:</p>
+<div class="ulist">
+<ul>
+<li>
+<p>copy all created Sahi fake certificates:</p>
+<div class="literalblock">
+<div class="content">
+<pre>sahi_example_com  --&gt;  __SAKULI_ROOT__/sahi/userdata/certs/
+www_github_com    --&gt;  __SAKULI_ROOT__/sahi/userdata/certs/</pre>
+</div>
+</div>
+</li>
+<li>
+<p>copy the Firefox certificate store to Sahi default profile</p>
+<div class="literalblock">
+<div class="content">
+<pre>cert8.db          --&gt;  __SAKULI_ROOT__/sahi/config/ff_profile_template/
+key3.db           --&gt;  __SAKULI_ROOT__/sahi/config/ff_profile_template/
+cert_override.txt --&gt;  __SAKULI_ROOT__/sahi/config/ff_profile_template/</pre>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Fore more information see: <a href="#docker-https-sahi">Docker - Writing HTTPS Sahi web tests</a>, <a href="#java-dsl-https">JavaDSL - HTTPS Sites</a></p>
 </div>
 </div>
 </div>
@@ -11424,7 +11597,7 @@ Website: <a href="http://www.consol.de">www.consol.de</a></p>
 <div id="footer">
 <div id="footer-text">
 Version v1.1.0-SNAPSHOT<br>
-Last updated 2017-10-12 20:02:28 CEST
+Last updated 2017-10-13 16:07:24 CEST
 </div>
 </div>
 <!--
