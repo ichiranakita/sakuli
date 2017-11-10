@@ -608,7 +608,7 @@ table.CodeRay td.code>pre{padding:0}
 <span id="author" class="author">The Sakuli Team</span><br>
 <span id="email" class="email"><a href="mailto:sakuli@consol.de">sakuli@consol.de</a></span><br>
 <span id="revnumber">version v1.1.0-SNAPSHOT,</span>
-<span id="revdate">08.11.2017 @ 10:57:29 CET</span>
+<span id="revdate">10.11.2017 @ 14:00:27 CET</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Sakuli E2E</div>
@@ -8118,9 +8118,18 @@ sakuli.forwarder.gearman.nagios.check_command=check_sakuli</code></pre>
 </tr>
 </table>
 </div>
-<div class="paragraph">
-<p>In case you get a <code>java.lang.security.InvalidKeyException</code> with error message <em>"Illegal key size or default parameters"</em> you probably
-need to enable unlimited strength security policies in your Java JRE. This is done by adding a special security policy JAR to the Java JRE lib directory. For the Java JRE 8, take a look at <a href="http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html">Oracle - Java Cryptography Extension 8</a>.</p>
+<div id="invalid-key-exception-aes-cryptography" class="admonitionblock tip">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-tip" title="Tip"></i>
+</td>
+<td class="content">
+In case you get a <code>java.lang.security.InvalidKeyException</code> with error message <em>"Illegal key size or default parameters"</em> you probably
+need to enable unlimited strength security policies in your Java JRE. This is done by installing <a href="http://openjdk.java.net/">OpenJDK</a> or by adding a special security policy JAR to the Java JRE lib directory. For the Java JRE 8, take a look at <a href="http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html">Oracle - Java Cryptography Extension 8</a>.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect5">
@@ -11597,7 +11606,7 @@ Website: <a href="http://www.consol.de">www.consol.de</a></p>
 <div id="footer">
 <div id="footer-text">
 Version v1.1.0-SNAPSHOT<br>
-Last updated 2017-11-08 10:57:31 CET
+Last updated 2017-11-10 14:00:29 CET
 </div>
 </div>
 <!--
