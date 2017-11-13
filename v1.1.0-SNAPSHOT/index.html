@@ -608,7 +608,7 @@ table.CodeRay td.code>pre{padding:0}
 <span id="author" class="author">The Sakuli Team</span><br>
 <span id="email" class="email"><a href="mailto:sakuli@consol.de">sakuli@consol.de</a></span><br>
 <span id="revnumber">version v1.1.0-SNAPSHOT,</span>
-<span id="revdate">10.11.2017 @ 14:00:27 CET</span>
+<span id="revdate">13.11.2017 @ 10:53:42 CET</span>
 </div>
 <div id="toc" class="toc2">
 <div id="toctitle">Sakuli E2E</div>
@@ -3068,19 +3068,19 @@ new Region().find("calculator-logo.png").grow(200,200).takeScreenshot("/tmp/my-s
 <div class="literalblock">
 <div class="content">
 <pre>~$ mkdir -p ssl_files
-~$ export CONAINER_ID=&lt;your-docker-container-id&gt;
-~$ docker cp $CONAINER_ID:/headless/sakuli/sahi/userdata/certs ssl_files/sahi_certs</pre>
+~$ export CONTAINER_ID=&lt;your-docker-container-id&gt;
+~$ docker cp $CONTAINER_ID:/headless/sakuli/sahi/userdata/certs ssl_files/sahi_certs</pre>
 </div>
 </div>
 </li>
 <li>
-<p>Firefox ertificate store</p>
+<p>Firefox certificate store</p>
 <div class="literalblock">
 <div class="content">
 <pre>~$ mkdir -p ssl_files/ff_profile
-~$ docker cp $CONAINER_ID:/headless/sakuli/sahi/userdata/browser/ff/profiles/sahi0/cert8.db ssl_files/ff_profile/
-~$ docker cp $CONAINER_ID:/headless/sakuli/sahi/userdata/browser/ff/profiles/sahi0/key3.db  ssl_files/ff_profile/
-~$ docker cp $CONAINER_ID:/headless/sakuli/sahi/userdata/browser/ff/profiles/sahi0/cert_override.txt ssl_files/ff_profile/</pre>
+~$ docker cp $CONTAINER_ID:/headless/sakuli/sahi/userdata/browser/ff/profiles/sahi0/cert8.db ssl_files/ff_profile/
+~$ docker cp $CONTAINER_ID:/headless/sakuli/sahi/userdata/browser/ff/profiles/sahi0/key3.db  ssl_files/ff_profile/
+~$ docker cp $CONTAINER_ID:/headless/sakuli/sahi/userdata/browser/ff/profiles/sahi0/cert_override.txt ssl_files/ff_profile/</pre>
 </div>
 </div>
 </li>
@@ -3103,6 +3103,14 @@ ssl_files
     ├── shavar_services_mozilla_com
     └── tiles_services_mozilla_com
 2 directories, 7 files</pre>
+</div>
+</div>
+</li>
+<li>
+<p>Update the permissions to ensure that the files can be read by container user:</p>
+<div class="literalblock">
+<div class="content">
+<pre>~$ chmod a+rw ssl_files/</pre>
 </div>
 </div>
 </li>
@@ -5231,7 +5239,7 @@ This won&#8217;t stop the execution of the test case.</p>
 </div>
 <div class="paragraph">
 <p><strong>Example</strong>
-Press and release the right mouse button vor 3 seconds on a specified region:</p>
+Press and release the right mouse button for 3 seconds on a specified region:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -5510,7 +5518,7 @@ region.mouseDown(MouseButton.RIGHT).sleep(<span class="integer">3</span>).mouseU
 </div>
 <div class="paragraph">
 <p><strong>Example</strong>
-Press and release the right mouse button vor 3 seconds on a specified region:</p>
+Press and release the right mouse button for 3 seconds on a specified region:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -5539,7 +5547,7 @@ region.mouseDown(MouseButton.RIGHT).sleep(<span class="integer">3</span>).mouseU
 <p><strong>Example</strong></p>
 </div>
 <div class="paragraph">
-<p>Press and release the right mouse button vor 3 seconds on a specified region:</p>
+<p>Press and release the right mouse button for 3 seconds on a specified region:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -11606,7 +11614,7 @@ Website: <a href="http://www.consol.de">www.consol.de</a></p>
 <div id="footer">
 <div id="footer-text">
 Version v1.1.0-SNAPSHOT<br>
-Last updated 2017-11-10 14:00:29 CET
+Last updated 2017-11-13 10:53:44 CET
 </div>
 </div>
 <!--
